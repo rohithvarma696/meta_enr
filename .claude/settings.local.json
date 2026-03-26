@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /r/meta_enr -name *.ipynb -o -name test* -o -name *test*)",
+      "Bash(python3:*)"
+    ]
+  }
+}
