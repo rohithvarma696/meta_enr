@@ -6,6 +6,7 @@ import csv
 from datetime import datetime
 from typing import Optional
 
+import pandas as pd
 import requests as http_requests
 
 from fastapi import FastAPI, HTTPException, Query
@@ -14,6 +15,7 @@ from pydantic import BaseModel
 
 import data_loader as dl
 import faiss_engine as fe
+import faiss_engine_dubbed as fe_dubbed
 
 # ── logging setup ─────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -104,6 +106,10 @@ class ManualEnrichRequest(BaseModel):
     contentid:  str
 
 class AdvancedSearchRequest(BaseModel):
+    project_id: str
+    contentid:  str
+
+class DubbedSearchRequest(BaseModel):
     project_id: str
     contentid:  str
 
@@ -563,6 +569,35 @@ def advanced_search(req: AdvancedSearchRequest):
             base_results = matched
 
     return {"results": base_results, "query": query}
+
+
+@app.post("/dubbed_search", summary="Dubbed content match using director+cast FAISS index")
+def dubbed_search(req: DubbedSearchRequest):
+    try:
+        df = _get_df(req.project_id)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+    rows = df[df["contentid"] == req.contentid]
+    if rows.empty:
+        raise HTTPException(status_code=404, detail="Content ID not found")
+
+    row = rows.iloc[0]
+    query_df = pd.DataFrame([{
+        "contentid": str(row.get("contentid", "")),
+        "title":     str(row.get("contentname", "")),
+        "director":  str(row.get("director", "")),
+        "cast":      str(row.get("cast", "")),
+        "imgurl":    str(row.get("imgurl", "")),
+    }])
+
+    try:
+        results = fe_dubbed.search(query_df)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Dubbed search failed: {e}")
+
+    matches = results[0]["matches"] if results else []
+    return {"matches": matches}
 
 
 @app.get("/index/status", summary="FAISS index cache status")

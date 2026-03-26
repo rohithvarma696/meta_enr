@@ -44,6 +44,9 @@ export const removeMatch = (projectId, contentId) =>
 export const advancedSearch = (projectId, contentId) =>
   api.post('/advanced_search', { project_id: projectId, contentid: contentId }).then(r => r.data)
 
+export const dubbedSearch = (projectId, contentId) =>
+  api.post('/dubbed_search', { project_id: projectId, contentid: contentId }).then(r => r.data)
+
 export const manualEnrich = (projectId, contentId) =>
   api.post('/manual_enrich', { project_id: projectId, contentid: contentId }).then(r => r.data)
 

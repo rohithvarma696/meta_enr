@@ -886,6 +886,21 @@ body {
 .adv-search-btn:hover:not(:disabled) { opacity: 0.82; }
 .adv-search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ── Dubbed Content button ────────────────────────────────────────────────── */
+.dubbed-search-btn {
+  background: #0e7490;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 13px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.dubbed-search-btn:hover:not(:disabled) { opacity: 0.82; }
+.dubbed-search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ── scroll FAB buttons ─────────────────────────────────────────────────── */
 .scroll-fab-group {
   position: fixed;

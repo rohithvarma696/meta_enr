@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import FilterPanel from './components/FilterPanel'
 import Pagination from './components/Pagination'
-import { applyFilter, runEnrich, saveMatch, removeMatch, manualEnrich, removeManualEnrich, searchContents, advancedSearch } from './api/client'
+import { applyFilter, runEnrich, saveMatch, removeMatch, manualEnrich, removeManualEnrich, searchContents, advancedSearch, dubbedSearch } from './api/client'
 
 export default function App() {
   // Filter results state
@@ -460,6 +460,9 @@ function ContentCard({ item, projectId, enrichActive, highlight }) {
   const [advResults, setAdvResults]           = useState(null);   // null = not run yet
   const [advLoading, setAdvLoading]           = useState(false);
   const [advSelectedId, setAdvSelectedId]     = useState(null);
+  const [dubbedResults, setDubbedResults]     = useState(null);  // null = not run yet
+  const [dubbedLoading, setDubbedLoading]     = useState(false);
+  const [dubbedSelectedId, setDubbedSelectedId] = useState(null);
 
   const handleAdvancedSearch = async () => {
     try {
@@ -471,6 +474,19 @@ function ContentCard({ item, projectId, enrichActive, highlight }) {
       alert('Advanced search failed.');
     } finally {
       setAdvLoading(false);
+    }
+  };
+
+  const handleDubbedSearch = async () => {
+    try {
+      setDubbedLoading(true);
+      const data = await dubbedSearch(projectId, item.contentid);
+      setDubbedResults(data.matches);
+    } catch (err) {
+      console.error(err);
+      alert('Dubbed search failed.');
+    } finally {
+      setDubbedLoading(false);
     }
   };
 
@@ -527,6 +543,13 @@ function ContentCard({ item, projectId, enrichActive, highlight }) {
           >
             {advLoading ? '...' : 'Advanced Search'}
           </button>
+          <button
+            className="dubbed-search-btn"
+            onClick={handleDubbedSearch}
+            disabled={dubbedLoading}
+          >
+            {dubbedLoading ? '...' : 'Dubbed Content?'}
+          </button>
         </div>
       )}
       <div className="content-card-top">
@@ -580,6 +603,30 @@ function ContentCard({ item, projectId, enrichActive, highlight }) {
                   disableSelect={advSelectedId !== null && advSelectedId !== r.imdb_id}
                   onSelect={(id) => setAdvSelectedId(id)}
                   onRemove={() => setAdvSelectedId(null)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {dubbedResults && (
+        <div className="carousel-section" style={{ padding: '16px 0 0 0', marginTop: '16px', borderTop: '1px solid var(--border)' }}>
+          <div className="carousel-label">🎙️ Dubbed Matches ({dubbedResults.length})</div>
+          {dubbedResults.length === 0 ? (
+            <p style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>No dubbed matches found.</p>
+          ) : (
+            <div className="carousel-track">
+              {dubbedResults.map((m, idx) => (
+                <MatchCard
+                  key={idx}
+                  match={m}
+                  projectId={projectId}
+                  contentId={item.contentid}
+                  isSelected={dubbedSelectedId === m.id}
+                  disableSelect={dubbedSelectedId !== null && dubbedSelectedId !== m.id}
+                  onSelect={(id) => setDubbedSelectedId(id)}
+                  onRemove={() => setDubbedSelectedId(null)}
                 />
               ))}
             </div>
